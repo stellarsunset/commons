@@ -56,7 +56,7 @@ mavenPublishing {
     coordinates("io.github.stellarsunset", "commons", project.version.toString())
 
     pom {
-        name = "terrain"
+        name = "common"
         description = "Common classes that may make it into the public API of my open-source repos."
         url = "https://github.com/stellarsunset/commons"
         licenses {
