@@ -3,7 +3,7 @@ default:
 
 # run unit tests
 test:
-  ./gradlew test
+  ./gradlew test javadoc
 
 # increment the provided version type and publish the repository
 release type='patch': test

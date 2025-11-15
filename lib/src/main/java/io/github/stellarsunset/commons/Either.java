@@ -61,10 +61,10 @@ public record Either<L, R>(Optional<L> left, Optional<R> right) {
     /**
      * Useful for coalescing an {@link Either} instance to a result type, e.g. a success or failure.
      *
-     * <pre>
+     * <pre>{@code
      *     Either<T, Exception> result = someMethod();
      *     return result.apply(t -> Result.SUCCESS, e -> Result.FAILURE);
-     * </pre>
+     * }</pre>
      */
     public <T> T apply(Function<L, T> lFn, Function<R, T> rFn) {
         return left.map(lFn).or(() -> right.map(rFn)).orElseThrow();
@@ -74,13 +74,13 @@ public record Either<L, R>(Optional<L> left, Optional<R> right) {
      * Consume either the left or right side if present and do something with it, but doesn't require type coalescing.
      * Usually useful for logging the content of an {@link Either} before doing something with it.
      *
-     * <pre>
+     * <pre>{@code
      *     Either<T, Exception> result = someMethod();
      *     return result.peek(
      *         t -> log.info("Successfully computed result."),
      *         ex -> log.error("Failed during execution.", ex)
      *     );
-     * </pre>
+     * }</pre>
      */
     public Either<L, R> peek(Consumer<L> lFn, Consumer<R> rFn) {
         left.ifPresentOrElse(lFn, () -> right.ifPresent(rFn));
@@ -93,10 +93,10 @@ public record Either<L, R>(Optional<L> left, Optional<R> right) {
      *
      * <p>To convert something to an exception and then throw see {@link #orThrowLeft(Function)}.
      *
-     * <pre>
+     * <pre>{@code
      *     Either<T, Exception> result = someMethod();
      *     T t = result.orThrowRight();
-     * </pre>
+     * }</pre>
      */
     public R orThrowLeft() {
         return orThrowLeft(left -> left instanceof RuntimeException rt ? rt : new NotAnExceptionTypeException(left));
