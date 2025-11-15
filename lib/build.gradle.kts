@@ -5,7 +5,7 @@ import com.vanniktech.maven.publish.SonatypeHost
 plugins {
     `java-library`
     jacoco
-    id("io.github.stellarsunset.auto-semver") version "0.0.6"
+    id("io.github.stellarsunset.auto-semver") version "2.0.0"
     id("com.vanniktech.maven.publish") version "0.28.0"
 }
 
@@ -19,7 +19,7 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(23)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -56,7 +56,7 @@ mavenPublishing {
     coordinates("io.github.stellarsunset", "commons", project.version.toString())
 
     pom {
-        name = "terrain"
+        name = "commons"
         description = "Common classes that may make it into the public API of my open-source repos."
         url = "https://github.com/stellarsunset/commons"
         licenses {

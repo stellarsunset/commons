@@ -1,6 +1,7 @@
 package io.github.stellarsunset.commons;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -35,23 +36,74 @@ public record Either<L, R>(Optional<L> left, Optional<R> right) {
         return new Either<>(left, right.map(fn));
     }
 
+    /**
+     * E.g. {@link Optional#flatMap(Function)}.
+     *
+     * <p>For composition with functions whose results are themselves an {@link Either}.
+     */
+    public <T> Either<T, R> flatMapLeft(Function<L, Either<T, R>> fn) {
+        return right.isPresent() ? new Either<>(Optional.empty(), right) : fn.apply(left.orElseThrow());
+    }
+
+    /**
+     * E.g. {@link Optional#flatMap(Function)}.
+     *
+     * <p>For composition with functions whose results are themselves an {@link Either}.
+     */
+    public <T> Either<L, T> flatMapRight(Function<R, Either<L, T>> fn) {
+        return left.isPresent() ? new Either<>(left, Optional.empty()) : fn.apply(right.orElseThrow());
+    }
+
     public Either<R, L> swap() {
         return new Either<>(right, left);
     }
 
+    /**
+     * Useful for coalescing an {@link Either} instance to a result type, e.g. a success or failure.
+     *
+     * <pre>
+     *     Either<T, Exception> result = someMethod();
+     *     return result.apply(t -> Result.SUCCESS, e -> Result.FAILURE);
+     * </pre>
+     */
     public <T> T apply(Function<L, T> lFn, Function<R, T> rFn) {
         return left.map(lFn).or(() -> right.map(rFn)).orElseThrow();
     }
 
     /**
-     * Shorthand for {@link #orThrowLeft(Function)} given the left-hand type is a subclass of {@link Exception}.
+     * Consume either the left or right side if present and do something with it, but doesn't require type coalescing.
+     * Usually useful for logging the content of an {@link Either} before doing something with it.
+     *
+     * <pre>
+     *     Either<T, Exception> result = someMethod();
+     *     return result.peek(
+     *         t -> log.info("Successfully computed result."),
+     *         ex -> log.error("Failed during execution.", ex)
+     *     );
+     * </pre>
+     */
+    public Either<L, R> peek(Consumer<L> lFn, Consumer<R> rFn) {
+        left.ifPresentOrElse(lFn, () -> right.ifPresent(rFn));
+        return this;
+    }
+
+    /**
+     * Shorthand for {@link #orThrowLeft(Function)} given the left-hand type is a subclass of {@link Exception}, this
+     * does require that the left value be a {@link RuntimeException}.
+     *
+     * <p>To convert something to an exception and then throw see {@link #orThrowLeft(Function)}.
+     *
+     * <pre>
+     *     Either<T, Exception> result = someMethod();
+     *     T t = result.orThrowRight();
+     * </pre>
      */
     public R orThrowLeft() {
         return orThrowLeft(left -> left instanceof RuntimeException rt ? rt : new NotAnExceptionTypeException(left));
     }
 
     /**
-     * Return the non-null right side of the either or convert the left side to a {@link RuntimeException} and throw.
+     *
      */
     public <E extends RuntimeException> R orThrowLeft(Function<L, E> toException) {
         if (left.isPresent()) {
@@ -61,14 +113,14 @@ public record Either<L, R>(Optional<L> left, Optional<R> right) {
     }
 
     /**
-     * Shorthand for {@link #orThrowRight(Function)} given the left-hand type is a subclass of {@link Exception}.
+     * See {@link #orThrowLeft()}.
      */
     public L orThrowRight() {
         return orThrowRight(right -> right instanceof RuntimeException rt ? rt : new NotAnExceptionTypeException(right));
     }
 
     /**
-     * Return the non-null left side of the either or convert the right side to a {@link RuntimeException} and throw.
+     * See {@link #orThrowLeft(Function)}.
      */
     public <E extends RuntimeException> L orThrowRight(Function<R, E> toException) {
         if (right.isPresent()) {

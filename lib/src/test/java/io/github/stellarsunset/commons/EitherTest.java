@@ -56,4 +56,18 @@ class EitherTest {
                 () -> assertThrows(Either.NotAnExceptionTypeException.class, () -> Either.ofLeft(2).orThrowLeft(), "(2, null).orThrowLeft()")
         );
     }
+
+    @Test
+    void testFlatMap() {
+
+        Either<String, Long> eLeft = Either.ofLeft("A");
+        Either<String, Long> eRight = Either.ofRight(1L);
+
+        assertAll(
+                () -> assertEquals(eLeft, eLeft.flatMapRight(right -> Either.ofRight(right + 1)), "FlatMapRight on side without value should change nothing"),
+                () -> assertEquals(eLeft, eRight.flatMapRight(right -> Either.ofLeft("A")), "FlatMapRight on side without value should change nothing"),
+                () -> assertEquals(eRight, eRight.flatMapLeft(left -> Either.ofLeft(left + "A")), "FlatMapLeft on side without value should change nothing"),
+                () -> assertEquals(eRight, eLeft.flatMapLeft(left -> Either.ofRight(1L)), "FlatMapLeft on side without value should change nothing")
+        );
+    }
 }
