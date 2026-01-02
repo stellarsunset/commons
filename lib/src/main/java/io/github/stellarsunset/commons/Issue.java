@@ -28,6 +28,13 @@ public interface Issue {
     }
 
     /**
+     * Returns a new "plain" issue with just a summary of what was wrong and no additional content, for simple cases.
+     */
+    static Plain plain(String summary) {
+        return new Plain(summary);
+    }
+
+    /**
      * Convenience, overload.
      */
     static ExceptionThrown exceptionThrown(Exception exception) {
@@ -96,6 +103,9 @@ public interface Issue {
         public String summary() {
             return "There is no issue.";
         }
+    }
+
+    record Plain(String summary) implements Issue {
     }
 
     record ExceptionThrown(String summary, Exception exception) implements Issue {
