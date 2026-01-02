@@ -1,5 +1,9 @@
 package io.github.stellarsunset.commons;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -15,21 +19,19 @@ import static java.util.Objects.requireNonNull;
 public interface Issue {
 
     /**
-     * Returns the {@link Issue} wrapped as a {@link RuntimeException} that can be directly thrown.
-     *
-     * <p>A sensible default implementation is provided here to cover most cases, but this can and should be overwritten
-     * for any custom {@link Issue} subtypes that may want to throw their own dedicated exception shape.
-     */
-    default RuntimeException asException() {
-        return new AsThrowable(this);
-    }
-
-    /**
      * There is no issue.
      *
      * <p>Defined centrally as it <i>may</i> be useful to have this notion centralized.
      */
-    record Nothing() implements Issue {
+    static None none() {
+        return new None();
+    }
+
+    /**
+     * Convenience, overload.
+     */
+    static ExceptionThrown exceptionThrown(Exception exception) {
+        return exceptionThrown("Encountered an exception while running.", exception);
     }
 
     /**
@@ -46,12 +48,60 @@ public interface Issue {
      *     }
      * }
      * }</pre>
+     *
+     * <p>Has special handling in the {@link AsThrowable}.
      */
-    record ExceptionThrown(String message, Exception exception) implements Issue {
+    static ExceptionThrown exceptionThrown(String summary, Exception exception) {
+        return new ExceptionThrown(summary, exception);
+    }
 
-        public ExceptionThrown(Exception exception) {
-            this("An unexpected exception was thrown.", exception);
+    /**
+     * Convenience, overload.
+     */
+    static AllOf allOf(Issue... issues) {
+        return allOf(Stream.of(issues).map(Issue::summary).collect(Collectors.joining("\n")), List.of(issues));
+    }
+
+    /**
+     * Returns a new {@link Issue} representing the combination of all the provided issues.
+     *
+     * <p>This is mostly useful for issue aggregation and indicating when multiple distinct things went wrong in the
+     * program all of which have different underlying causal factors that need to be handled.
+     *
+     * <p>Has special handling in the {@link AsThrowable}.
+     */
+    static AllOf allOf(String summary, List<Issue> issues) {
+        return new AllOf(summary, issues);
+    }
+
+    /**
+     * Out of courtesy, {@link Issue}s should include a descriptive summary.
+     *
+     * <p>This is used in a couple built-in places like setting the {@link AsThrowable} exception message.
+     */
+    String summary();
+
+    /**
+     * Returns the {@link Issue} wrapped as a {@link RuntimeException} that can be directly thrown.
+     *
+     * <p>A sensible default implementation is provided here to cover most cases, but this can and should be overwritten
+     * for any custom {@link Issue} subtypes that may want to throw their own dedicated exception shape.
+     */
+    default RuntimeException asException() {
+        return new AsThrowable(this);
+    }
+
+    record None() implements Issue {
+        @Override
+        public String summary() {
+            return "There is no issue.";
         }
+    }
+
+    record ExceptionThrown(String summary, Exception exception) implements Issue {
+    }
+
+    record AllOf(String summary, List<Issue> issues) implements Issue {
     }
 
     /**
@@ -66,12 +116,17 @@ public interface Issue {
         private final Issue issue;
 
         private AsThrowable(Issue issue) {
-            super("Encountered an issue in program execution: " + issue);
+            super(issue.summary(), issue instanceof ExceptionThrown ex ? ex.exception() : null);
             this.issue = requireNonNull(issue);
+            this.addSuppressed(issue);
+        }
 
-            // Special-case ExceptionThrown to add the wrapped exception as suppressed on the final exception
+        private void addSuppressed(Issue issue) {
             if (issue instanceof ExceptionThrown ex) {
                 this.addSuppressed(ex.exception());
+            }
+            if (issue instanceof AllOf ao) {
+                ao.issues().forEach(this::addSuppressed);
             }
         }
 

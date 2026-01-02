@@ -2,17 +2,20 @@ package io.github.stellarsunset.commons;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class IssueTest {
 
     @Test
     void testAsThrowable() {
         var exception = new IllegalArgumentException();
-        var issue = new Issue.ExceptionThrown(exception);
+        var issue = Issue.exceptionThrown(exception);
 
         var throwable = issue.asException();
-        assertArrayEquals(new Throwable[]{exception}, throwable.getSuppressed(),
-                "Should see the exception as suppressed");
+        assertAll(
+                () -> assertArrayEquals(new Throwable[]{exception}, throwable.getSuppressed(),
+                        "Should see the exception as suppressed"),
+                () -> assertEquals(exception, throwable.getCause(), "Should see exception in cause")
+        );
     }
 }

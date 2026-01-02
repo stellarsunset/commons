@@ -48,12 +48,12 @@ class EitherTest {
         assertAll(
                 () -> assertEquals(1, Either.ofLeft(1).orThrowRight(), "(1, null).orThrowRight()"),
                 () -> assertThrows(IllegalArgumentException.class, () -> Either.ofRight(exception).orThrowRight(), "(null, exception).orThrowRight()"),
-                () -> assertThrows(Issue.AsThrowable.class, () -> Either.ofRight(new Issue.Nothing()).orThrowRight(), "(null, issue).orThrowRight()"),
+                () -> assertThrows(Issue.AsThrowable.class, () -> Either.ofRight(new Issue.None()).orThrowRight(), "(null, issue).orThrowRight()"),
                 () -> assertThrows(IllegalArgumentException.class, () -> Either.ofRight(1).orThrowRight(i -> exception), "(null, 1).orThrowRight(...)"),
                 () -> assertThrows(Either.NotAnExceptionTypeException.class, () -> Either.ofRight(1).orThrowRight(), "(null, 1).orThrowRight()"),
                 () -> assertEquals(2, Either.ofRight(2).orThrowLeft(), "(null, 2).orThrowLeft()"),
                 () -> assertThrows(IllegalArgumentException.class, () -> Either.ofLeft(exception).orThrowLeft(), "(exception, null).orThrowLeft()"),
-                () -> assertThrows(Issue.AsThrowable.class, () -> Either.ofLeft(new Issue.Nothing()).orThrowLeft(), "(null, issue).orThrowLeft()"),
+                () -> assertThrows(Issue.AsThrowable.class, () -> Either.ofLeft(new Issue.None()).orThrowLeft(), "(null, issue).orThrowLeft()"),
                 () -> assertThrows(IllegalArgumentException.class, () -> Either.ofLeft(2).orThrowLeft(i -> exception), "(2, null).orThrowLeft(...)"),
                 () -> assertThrows(Either.NotAnExceptionTypeException.class, () -> Either.ofLeft(2).orThrowLeft(), "(2, null).orThrowLeft()")
         );
