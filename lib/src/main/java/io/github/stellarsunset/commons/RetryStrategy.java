@@ -14,7 +14,10 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
 /**
  * Represents a high-level strategy that can be used to retry a task, typically until some implementation-specific exit
  * criteria has been met.
+ *
+ * @deprecated use the FailSafe library
  */
+@Deprecated
 @FunctionalInterface
 public interface RetryStrategy {
 

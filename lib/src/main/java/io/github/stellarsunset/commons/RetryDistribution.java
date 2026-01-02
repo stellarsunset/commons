@@ -7,7 +7,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Interface representing a distribution of retry times - typically to be used alongside a {@link RetryStrategy}.
+ *
+ * @deprecated use the FailSafe library
  */
+@Deprecated
 @FunctionalInterface
 public interface RetryDistribution {
 
@@ -60,7 +63,7 @@ public interface RetryDistribution {
         return previousWait -> {
             if (previousWait.isZero()) {
                 return waitForFirstRetry;
-            }else{
+            } else {
                 double iteration = Math.log(previousWait.toMillis()) / Math.log(waitForFirstRetry.toMillis());
                 return Duration.ofMillis((long) Math.pow(waitForFirstRetry.toMillis(), iteration + 1));
             }
