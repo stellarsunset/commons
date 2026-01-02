@@ -29,13 +29,17 @@ in tandem with `Issue`:
 
 ```java
 interface MyFunction<U, V> {
-    /** Return either the result of the operation, or an issue describing a problem that occurred. */
+    /** 
+     * Return either the result of the operation, or an issue describing a problem 
+     * that occurred. 
+     */
     Either<V, Issue> apply(U u);
 }
 
 String result = myFunction.apply("hello")
         .flatMapRight(i -> i instanceof CanFix ? Either.ofLeft("fixed") : Either.ofRight(i))
-        // Explicit as follows, but Issue also has special handling in the no-argument version of Either.orThrowRight()
+        // Explicit as follows, but Issue also has special handling in the no-argument 
+        // version of Either.orThrowRight()
         .orThrowRight(Issue::asThrowable);
 ```
 
