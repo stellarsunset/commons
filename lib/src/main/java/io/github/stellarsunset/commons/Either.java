@@ -9,9 +9,41 @@ import static com.google.common.base.Preconditions.checkArgument;
 /**
  * Simple class for working with one of two possible values in a return type.
  *
- * <p>This makes it easier to work with Go-like syntax in error handling, returning {@code Either<Value, Error>}. Often
- * the {@code Error} will be a sealed interface of known error conditions which can either be handled or down-converted
- * to {@link RuntimeException}s and thrown.
+ * <p>While generally useful, this class is primarily intended to be used to simulate Go-style method returns.
+ *
+ * <p>In Go, convention is for functions to return as follows:
+ * <pre>{@code
+ * import "package"
+ *
+ * result, err := package.MyFunction()
+ * if err != nil {
+ *     // handle it, or just panic throwing a runtime exception
+ *     panic(err)
+ * }
+ * }</pre>
+ *
+ * <p>In Java, which doesn't have multiple assignment, this can be clunkier. {@link Either} is an imperfect attempt to
+ * make this slightly better, specifically when used in conjunction with {@link Issue}:
+ * <pre>{@code
+ * interface MyFunction<U, V> {
+ *     Either<V, Issue> apply(U u);
+ * }
+ *
+ * // Avoid having to throw and handle checked exceptions in try {} catch {}
+ * var either = myFunction.apply("hello")
+ *     .flatMapRight(i -> i instanceof Fixable ? Either.ofLeft("fixed") : Either.ofRight(i));
+ *
+ * // Explicit as follows, but Issue also has special handling in Either.orThrowRight()
+ * var result = either.orThrowRight(Issue::asThrowable);
+ * }</pre>
+ *
+ * <p>The above blends a bit of the functional style most Java devs are used to with some of the upside of the Go-like
+ * syntax namely:
+ * <ul>
+ *     <li>Readability - in that we avoid exceptions (checked or otherwise) and the try-catch song-and-dance everywhere</li>
+ *     <li>Safety - clients can extend {@link Issue} (or write their own type) that's {@code sealed}, and enumerate a
+ *     collection of known {@link Issue}s, some of which may be handleable before invoking {@link Either#orThrowRight()}</li>
+ * </ul>
  */
 public record Either<L, R>(Optional<L> left, Optional<R> right) {
 
@@ -97,13 +129,15 @@ public record Either<L, R>(Optional<L> left, Optional<R> right) {
      *     Either<T, Exception> result = someMethod();
      *     T t = result.orThrowRight();
      * }</pre>
+     *
+     * <p>There is special handling for {@link Issue}s, which can be thrown without a function to map it to an exception.
      */
     public R orThrowLeft() {
-        return orThrowLeft(left -> left instanceof RuntimeException rt ? rt : new NotAnExceptionTypeException(left));
+        return orThrowLeft(left -> left instanceof RuntimeException rt ? rt : left instanceof Issue i ? i.asException() : new NotAnExceptionTypeException(left));
     }
 
     /**
-     *
+     * See {@link #orThrowLeft()}.
      */
     public <E extends RuntimeException> R orThrowLeft(Function<L, E> toException) {
         if (left.isPresent()) {
@@ -116,11 +150,11 @@ public record Either<L, R>(Optional<L> left, Optional<R> right) {
      * See {@link #orThrowLeft()}.
      */
     public L orThrowRight() {
-        return orThrowRight(right -> right instanceof RuntimeException rt ? rt : new NotAnExceptionTypeException(right));
+        return orThrowRight(right -> right instanceof RuntimeException rt ? rt : right instanceof Issue i ? i.asException() : new NotAnExceptionTypeException(right));
     }
 
     /**
-     * See {@link #orThrowLeft(Function)}.
+     * See {@link #orThrowLeft()}.
      */
     public <E extends RuntimeException> L orThrowRight(Function<R, E> toException) {
         if (right.isPresent()) {
