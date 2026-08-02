@@ -1,13 +1,15 @@
 package io.github.stellarsunset.commons;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
 class IssueTest {
 
   @Test
-  void testAsThrowable_ExceptionThrown() {
+  void testAsThrowableExceptionThrown() {
     var exception = new IllegalArgumentException();
     var issue = Issue.exceptionThrown(exception);
 
@@ -22,7 +24,7 @@ class IssueTest {
   }
 
   @Test
-  void testAsThrowable_AllOf() {
+  void testAsThrowableAllOf() {
     var exception = new IllegalArgumentException();
     var issue = Issue.allOf(Issue.exceptionThrown(exception), Issue.exceptionThrown(exception));
 

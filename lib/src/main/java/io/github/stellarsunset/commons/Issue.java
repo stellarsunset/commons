@@ -79,7 +79,7 @@ public interface Issue {
    * <p>Has special handling in the {@link AsThrowable}.
    */
   static AllOf allOf(String summary, List<Issue> issues) {
-    return new AllOf(summary, issues);
+    return new AllOf(summary, List.copyOf(issues));
   }
 
   /**

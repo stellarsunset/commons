@@ -105,8 +105,8 @@ public record Either<L, R>(Optional<L> left, Optional<R> right) {
    * return result.apply(t -> Result.SUCCESS, e -> Result.FAILURE);
    * }</pre>
    */
-  public <T> T apply(Function<L, T> lFn, Function<R, T> rFn) {
-    return left.map(lFn).or(() -> right.map(rFn)).orElseThrow();
+  public <T> T apply(Function<L, T> leftFn, Function<R, T> rightFn) {
+    return left.map(leftFn).or(() -> right.map(rightFn)).orElseThrow();
   }
 
   /**
@@ -122,8 +122,8 @@ public record Either<L, R>(Optional<L> left, Optional<R> right) {
    * );
    * }</pre>
    */
-  public Either<L, R> peek(Consumer<L> lFn, Consumer<R> rFn) {
-    left.ifPresentOrElse(lFn, () -> right.ifPresent(rFn));
+  public Either<L, R> peek(Consumer<L> leftFn, Consumer<R> rightFn) {
+    left.ifPresentOrElse(leftFn, () -> right.ifPresent(rightFn));
     return this;
   }
 
