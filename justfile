@@ -4,8 +4,7 @@ default:
   just --list
 
 test:
-  ./gradlew test
-  ./gradlew functionalTest
+  ./gradlew check
 
 dependencies:
   ./gradlew -q dependencies --configuration compileClasspath > ./dependencies.txt
