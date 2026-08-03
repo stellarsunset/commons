@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    id("io.github.stellarsunset.java-conventions") version "0.0.6"
+    id("io.github.stellarsunset.java-conventions") version "0.0.7"
 }
 
 repositories {
