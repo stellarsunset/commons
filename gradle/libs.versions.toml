@@ -1,5 +1,5 @@
 [versions]
-guava = "33.7.0-jre"
+guava = "33.7.1-jre"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
